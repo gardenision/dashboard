@@ -1,6 +1,6 @@
 <template>
   <div class="card">
-    <div class="font-semibold text-xl mb-4">Log User / Hari</div>
+    <div class="font-semibold text-xl mb-4">Log Admin / Hari</div>
     <Chart type="line" :data="chartData" :options="chartOptions" class="h-[30rem]" />
   </div>
 </template>
@@ -60,13 +60,13 @@ onMounted(async () => {
       return;
     }
 
-    const response = await axios.get('/api/garden', {
+    const response = await axios.get('/api/project', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
 
-    const logs = response.data.total_user_logs_perday;
+    const logs = response.data.total_logs_perday;
 
     // Ambil 7 hari terakhir tanpa hari ini
     const last7DaysData = logs.slice(1, 8); // index 1 s/d 7 (tanpa index 0)
@@ -81,7 +81,7 @@ onMounted(async () => {
     chartData.value = {
       labels,
       datasets: [{
-        label: 'Jumlah Log Sensor',
+        label: 'Jumlah Log',
         data: last7DaysData,
         fill: false,
         borderColor: '#6eaa5e',

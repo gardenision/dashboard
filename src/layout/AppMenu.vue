@@ -7,13 +7,27 @@ import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
+// get role user
+const role = localStorage.getItem('role') || 'user'
+
 const model = ref([
     {
         items: [
-            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: { name: 'dashboard' } },
-            { label: 'Gardens', icon: 'mdi mdi-tree-outline text-xl', to: { name: 'garden' } }
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: { name: role === 'admin' ? 'admin' : 'dashboard' } },
+            // { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: { name: 'admin' } },
+            ...(role === 'user' ? [
+                { label: 'Gardens', icon: 'mdi mdi-tree-outline text-xl', to: { name: 'garden' } }
+            ] : []),
+
+
+            ...(role === 'admin' ? [
+                { label: 'Admin', icon: 'mdi mdi-tree-outline text-xl', to: {name: 'project'} }
+            ]:[]),
+
+
         ]
     },
+    ...(role === 'user' ? [
     {
         label: 'Garden',
         prefix: 'garden.',
@@ -29,9 +43,78 @@ const model = ref([
         items: [
             { label: 'Modules', icon: 'pi pi-fw pi-desktop', to: { name: 'garden.device.module' } },
             { label: 'Setting', icon: 'pi pi-fw pi-cog', to: { name: 'garden.device.setting' } },
-            { label: 'Analytic', icon: 'pi pi-fw pi-chart-bar', to: { name: 'garden.device.analytic' } }
+            { label: 'Analytic', icon: 'pi pi-fw pi-chart-bar', to: { name: 'garden.device.analytic' } },
+            { label: 'Report', icon: 'pi pi-fw pi-list-check', to: { name: 'garden.device.report' } }
         ]
     }
+    ] : []),
+
+    ...(role === 'admin' ? [
+        {
+            label: 'Project',
+            prefix: 'project.',
+            items: [
+                {label: 'Type', icon: 'pi pi-fw pi-desktop', to: { name: 'project.type' }},
+                // { label: 'Device', icon: 'pi pi-fw pi-desktop', to: { name: 'project.device' } },
+                // { label: 'Modules', icon: 'pi pi-fw pi-desktop', to: { name: 'project.module' } },
+            ]
+        },
+        {
+            label: 'Type',
+            prefix: 'project.type.',
+            items: [
+                { label: 'Device', icon: 'pi pi-fw pi-desktop', to: { name: 'project.type.device' } },
+                { label: 'Modules', icon: 'pi pi-fw pi-desktop', to: { name: 'project.type.module' } },
+            ]
+        }
+
+    ]:[])
+
+    // ...(role === 'admin' ? [
+    // // {
+    // //     label: 'Projects',
+    // //     // icon: 'pi pi-fw pi-folder',
+    // //     to: { name: 'admin.project' } // halaman list project
+    // // },
+    // {
+    //     label: 'Projects',
+    //     prefix: 'admin.project.',
+    //     items: [
+    //             {
+    //                 label: 'Device Types',
+    //                 icon: 'pi pi-fw pi-th-large',
+    //                 to: { name: 'admin.project.type' }
+    //             },
+    //             {
+    //                 label: 'Modules',
+    //                 icon: 'pi pi-fw pi-cog',
+    //                 to: { name: 'admin.project.type.module' }
+    //             },
+    //             {
+    //                 label: 'Edit Module',
+    //                 icon: 'pi pi-fw pi-pencil',
+    //                 to: { name: 'admin.project.type.module.edit' }
+    //             }
+    //     ]
+    // },
+    // {
+    //     label: 'Device Types',
+    //     prefix: 'admin.project.type.',
+    //     items: [
+    //         {
+    //             label: 'Modules',
+    //             icon: 'pi pi-fw pi-cog',
+    //             to: {name: 'admin.project.type.module'}
+    //         },
+    //         {
+    //             label: 'Devices',
+    //             icon: 'pi pi-fw pi-desktop',
+    //             to: {
+    //                 name: 'admin.project.type.device'}
+    //         }
+    //     ]
+    // }
+    // ] : [])
 ]);
 </script>
 

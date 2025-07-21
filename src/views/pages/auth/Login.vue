@@ -1,10 +1,81 @@
 <script setup>
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
-import { ref } from 'vue';
+import axios from 'axios';
+import { nextTick, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-const email = ref('');
+const identifier = ref(''); // bisa email atau username
 const password = ref('');
 const checked = ref(false);
+const errorMessage = ref('');
+const loading = ref(false);
+
+const router = useRouter()
+
+const handleLogin = async () => {
+    errorMessage.value = ''
+
+    if (!identifier.value || !password.value) {
+        errorMessage.value = 'Please fill in all fields.';
+        return;
+    }
+
+    loading.value = true
+    try {
+        const response = await axios.post('/api/login', {
+        email: identifier.value,
+        password: password.value,
+        })
+
+        // Jika berhasil, kamu bisa redirect atau simpan token
+        console.log(response.data)
+        // localStorage.setItem('token', response.data.token);
+        const token = response.data.token; // ✅ simpan token ke variabel
+        localStorage.setItem('token', token);
+        // localStorage.setItem('userId', user.id);
+        
+        // ambil data user u/ ambil rolenya
+        const userResponse = await axios.get('/api/user', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        const userId = userResponse.data.data.id; // ambil user ID dari data user
+        console.log('User ID:', userId);
+        localStorage.setItem('userId', userId);   // simpan ke localStorage
+
+
+        const role = userResponse.data.data.role.name;
+        localStorage.setItem('role', role); // ✅ simpan role dengan benar
+
+        console.log('Saved userId:', localStorage.getItem('userId'));
+
+        alert('Login successful!')
+
+        // router.push('/dashboard') // redirect ke halaman login
+        // 3. Redirect berdasarkan role
+        if (role === 'admin') {
+            router.push('/admin'); 
+            // sebelumnya router.push('/admin'); tapi karena /admin. karna klo klik admin langsung bikin project jd gajadi
+        } else {
+            await nextTick()
+            router.push('/dashboard');
+        }
+
+        } catch (error) {
+            // if (error.response && error.response.data) {
+            // errorMessage.value = error.response.data.message || 'Registration failed.'
+            // } else {
+            // errorMessage.value = 'Network error or server not responding.'
+            // }
+            console.error('Login error:', error);
+            errorMessage.value = error.response?.data?.message || 'Network error or server not responding.';
+        } finally {
+            loading.value = false
+        }
+    }
+
 </script>
 
 <template>
@@ -31,11 +102,11 @@ const checked = ref(false);
                                 />
                             </g>
                         </svg>
-                        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Welcome to PrimeLand!</div>
+                        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Welcome to Gardenision!</div>
                         <span class="text-muted-color font-medium">Sign in to continue</span>
                     </div>
 
-                    <div>
+                    <!-- <div>
                         <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
                         <InputText id="email1" type="text" placeholder="Email address" class="w-full md:w-[30rem] mb-8" v-model="email" />
 
@@ -50,7 +121,76 @@ const checked = ref(false);
                             <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
                         </div>
                         <Button label="Sign In" class="w-full" as="router-link" to="/dashboard"></Button>
-                    </div>
+                    </div> -->
+
+                    <!-- <div>
+                        <form @submit.prevent="handleLogin" class="space-y-4">
+
+                            <div v-if="errorMessage" class="text-red-500 text-sm text-center">
+                            {{ errorMessage }}
+                            </div>
+
+                            <label for="identifier" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email or Username</label>
+                            <input type="text" v-model="identifier" placeholder="Email address" class="w-full md:w-[30rem] mb-8" />
+
+                            <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
+                            <input id="password1" type="password" v-model="password" placeholder="Password" :toggleMask="true" class="mb-4" fluid :feedback="false">
+
+                            <div class="flex items-center justify-between mt-2 mb-8 gap-8">
+                                <div class="flex items-center">
+                                    <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
+                                    <label for="rememberme1">Remember me</label>
+                                </div>
+                                <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
+                            </div>
+                            <Button type="submit" label="Sign In" class="w-full" as="router-link" to="/dashboard"></Button>
+                        </form>
+                    </div> -->
+
+                    <form @submit.prevent="handleLogin" class="space-y-4">
+                        <div v-if="errorMessage" class="text-red-500 text-sm text-center">
+                        {{ errorMessage }}
+                        </div>
+
+                        <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                        <input
+                            type="email"
+                            v-model="identifier"
+                            class="w-full px-4 py-2 mt-1 text-sm border rounded-lg dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="you@example.com"
+                            required
+                        />
+                        </div>
+
+                        <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                        <input
+                            type="password"
+                            v-model="password" :toggleMask="true" fluid :feedback="false"
+                            class="w-full px-4 py-2 mt-1 text-sm border rounded-lg dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter password"
+                            required
+                        />
+                        </div>
+
+                        <div class="flex items-center justify-between mt-2 mb-8 gap-8">
+                            <div class="flex items-center">
+                                <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
+                                <label for="rememberme1">Remember me</label>
+                            </div>
+                            <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
+                        </div>
+
+                        <button
+                        type="submit"
+                        :disabled="loading"
+                        class="w-full py-2 px-4 text-white bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium transition disabled:opacity-50"
+                        >
+                        {{ loading ? 'Login...' : 'Sign In' }}
+                        </button>
+                    </form>
+
                 </div>
             </div>
         </div>

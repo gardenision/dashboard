@@ -1,34 +1,28 @@
 <template>
     <Title title="Devices" @add="showAdd()" @refresh="refresh()" />
-    <Dialog header="Dialog" v-model:visible="form.add.dialog" :breakpoints="{ '960px': '75vw' }" :style="{ width: '30vw' }" :modal="true">
-        <p class="leading-normal m-0">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
-            aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        </p>
+    <Dialog header="Add Devices" v-model:visible="form.add.dialog" :breakpoints="{ '960px': '75vw' }" :style="{ width: '30vw' }" :modal="true">
+        <div class="flex flex-col gap-2">
+            <label for="serial_number">Serial Number</label>
+            <input pInputText id="serial_number" v-model="serial_number" type="text" placeholder="Serial Number" class="p-2 border border-gray-300 rounded" />
+        </div>
+
         <template #footer>
-            <Button label="Save" @click="closeAdd()" />
+            <Button label="Save" @click="saveDevice" />
         </template>
     </Dialog>
     <Skeleton v-if="loading" height="50vh" />
     <div v-else class="grid grid-cols-12 gap-8">
-        <div class="col-span-12 lg:col-span-6 xl:col-span-3">
+        <div 
+            v-for="(device, index) in devices_gardens"
+            :key="device.id || index"
+            class="col-span-12 lg:col-span-6 xl:col-span-3"
+        >
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Device1</h5>
-                    <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed ipsum in lorem tempus porttitor.</p>
+                    <h5 class="card-title">{{ device.name }}</h5>
+                    <p class="card-text">{{ device.serial_number }}</p>
                     <div class="card-actions justify-end">
-                        <Button label="View" icon="pi pi-search" class="p-button-rounded p-button-outlined" @click="router.push({ name: 'garden.device.module', params: { garden: 'garden1', device: 'device1' } })" />
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-span-12 lg:col-span-6 xl:col-span-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Device1</h5>
-                    <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed ipsum in lorem tempus porttitor.</p>
-                    <div class="card-actions justify-end">
-                        <Button label="View" icon="pi pi-search" class="p-button-rounded p-button-outlined" @click="router.push({ name: 'garden.device.module', params: { garden: 'garden1', device: 'device1' } })" />
+                        <Button label="View" icon="pi pi-search" class="p-button-rounded p-button-outlined" @click="router.push({ name: 'garden.device.module', params: { device: device.id } })" />
                     </div>
                 </div>
             </div>
@@ -39,10 +33,14 @@
 <script setup>
 import Title from '@/components/dashboard/Title.vue';
 import { Skeleton } from 'primevue';
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+import axios from 'axios';
 
 const router = useRouter();
+const route = useRoute();
+
 const form = reactive({
     add: {
         dialog: false
@@ -51,33 +49,26 @@ const form = reactive({
 
 const loading = ref(true);
 
-const garden = ref({});
+const devices_gardens = ref([]);
+const serial_number = ref("");
 
-const devices = ref([]);
-
-function getGarden(id) {
-    return {
-        id: id,
-        name: 'Garden 1'
-    };
+async function getDevices(id) {
+    try{
+        const gardenId = route.params.garden;
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`/api/gardens/${gardenId}/devices`,{
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        console.log(response.data)
+        devices_gardens.value = response.data.devices;
+    } catch(error){
+        console.error('Gagal mengambil data devices:', error.response ? error.response.data : error.message);
+        alert('Gagal mengambil data devices. Cek console untuk detail.');
+    }
 }
 
-function getDevices() {
-    return [
-        {
-            id: 1,
-            name: 'Device 1'
-        },
-        {
-            id: 2,
-            name: 'Device 2'
-        },
-        {
-            id: 3,
-            name: 'Device 3'
-        }
-    ];
-}
 
 function showAdd() {
     form.add.dialog = true;
@@ -91,13 +82,42 @@ function refresh() {
     console.log('refresh');
 }
 
-onMounted(() => {
-    setTimeout(() => {
-        garden.value = getGarden(router.currentRoute.value.params.garden);
+async function saveDevice(){
+    const newDevice = {
+        serial_number: serial_number.value
+    }
 
-        devices.value = getDevices();
+    const token = localStorage.getItem('token');
 
-        loading.value = false;
-    }, 1000);
+    try {
+        const gardenId = route.params.garden; // asumsi route-nya /gardens/:garden
+        const response = await axios.post(`/api/gardens/${gardenId}/devices`, newDevice,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+        console.log('Berhasil kirim:', response.data);
+
+        // Optional: tambahkan ke list garden lokal
+        devices_gardens.value.push(response.data);
+
+        closeAdd();
+    } catch (error) {
+        console.error('Gagal kirim:', error.response ? error.response.data : error.message);
+        alert('Gagal menyimpan device. Cek console untuk detail.');
+    }
+
+}
+onMounted(async () => {
+    await getDevices();
+    loading.value = false;
+});
+
+watch(() => route.params.garden, async (newGardentId) => {
+    loading.value = true; // Tampilkan loading saat mengambil data
+    await getDevices(); // Ambil data device types untuk proyek baru
+    loading.value = false; // Sembunyikan loading setelah data diambil
 });
 </script>

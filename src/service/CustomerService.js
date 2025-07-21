@@ -3,18 +3,18 @@ export const CustomerService = {
         return [
             {
                 id: 1000,
-                name: 'James Butt',
+                name: 'Maguwo',
                 country: {
-                    name: 'Algeria',
+                    name: '2',
                     code: 'dz'
                 },
-                company: 'Benton, John B Jr',
+                company: 'Active',
                 date: '2015-09-13',
                 status: 'unqualified',
                 verified: true,
                 activity: 17,
                 representative: {
-                    name: 'Ioni Bowcher',
+                    name: '10 min ago',
                     image: 'ionibowcher.png'
                 },
                 balance: 70663

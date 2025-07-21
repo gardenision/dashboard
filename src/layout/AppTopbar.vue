@@ -2,6 +2,33 @@
 import { useLayout } from '@/layout/composables/layout';
 
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
+
+
+import { useToast } from "primevue/usetoast";
+import axios from 'axios';
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
+
+const logout = async () => {
+  try {
+    const token = localStorage.getItem('token') // ambil token dari localStorage
+
+    await axios.put('https://api.example.com/logout', {}, {
+      headers: {
+        Authorization: `Bearer ${token}` // kirim token di header Authorization
+      }
+    })
+
+    localStorage.removeItem('token') // hapus token setelah logout sukses
+    router.push({ name: 'home' })   // redirect ke halaman login
+  } catch (error) {
+    console.error('Logout gagal:', error) // jika error tetap lanjutkan logout lokal
+    localStorage.removeItem('token')
+    router.push({ name: 'home' })
+  }
+}
+
 </script>
 
 <template>
@@ -11,7 +38,7 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
                 <i class="pi pi-bars"></i>
             </button>
             <router-link to="/" class="layout-topbar-logo">
-                <svg viewBox="0 0 54 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- <svg viewBox="0 0 54 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                         fill-rule="evenodd"
                         clip-rule="evenodd"
@@ -27,7 +54,9 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
                             fill="var(--primary-color)"
                         />
                     </g>
-                </svg>
+                </svg> -->
+                <img src="/images/logo.jpg" alt="Logo" class="h-10 w-auto" />
+
 
                 <span>Gardenision</span>
             </router-link>
@@ -57,7 +86,11 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
                         <i class="pi pi-inbox"></i>
                         <span>Messages</span>
                     </button>
-                    <button type="button" class="layout-topbar-action">
+                    <!-- <button type="button" class="layout-topbar-action">
+                        <i class="pi pi-user"></i>
+                        <span>Profile</span>
+                    </button> -->
+                    <button type="button" class="layout-topbar-action" @click="logout">
                         <i class="pi pi-user"></i>
                         <span>Profile</span>
                     </button>

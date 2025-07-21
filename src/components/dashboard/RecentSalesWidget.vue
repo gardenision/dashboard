@@ -1,38 +1,106 @@
+<template>
+  <div class="card">
+    <div class="font-semibold text-xl mb-4">Log Sensor / Hari</div>
+    <Chart type="line" :data="chartData" :options="chartOptions" class="h-[30rem]" />
+  </div>
+</template>
+
 <script setup>
-import { ProductService } from '@/service/ProductService';
-import { onMounted, ref } from 'vue';
+import { ref, onMounted } from "vue";
+import axios from "axios";
+import Chart from 'primevue/chart';
 
-const products = ref(null);
+const chartData = ref();
+const chartOptions = ref();
 
-function formatCurrency(value) {
-    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+function setChartOptions() {
+  const documentStyle = getComputedStyle(document.documentElement);
+  const textColor = documentStyle.getPropertyValue('--p-text-color');
+  const textColorSecondary = documentStyle.getPropertyValue('--p-text-muted-color');
+  const surfaceBorder = documentStyle.getPropertyValue('--p-content-border-color');
+
+  return {
+    maintainAspectRatio: false,
+    aspectRatio: 0.6,
+    plugins: {
+      legend: {
+        labels: {
+          color: textColor
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: textColorSecondary
+        },
+        grid: {
+          color: surfaceBorder
+        }
+      },
+      y: {
+        ticks: {
+          color: textColorSecondary
+        },
+        grid: {
+          color: surfaceBorder
+        }
+      }
+    }
+  };
 }
 
-onMounted(() => {
-    ProductService.getProductsSmall().then((data) => (products.value = data));
+function getLast7DaysLabels(dataLength) {
+  const labels = [];
+  const today = new Date();
+
+  // Dari 7 hari lalu sampai kemarin (hari ini exclude)
+  for (let i = dataLength; i > 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    labels.push(d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }));
+  }
+
+  return labels;
+}
+
+onMounted(async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('Token not found');
+      return;
+    }
+
+    const response = await axios.get('/api/garden', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const logSensorDataRaw = response.data.total_user_logs_sensor_perday || [];
+
+    // Ambil 7 hari terakhir tanpa hari ini (buang index 0)
+    const logSensorData = logSensorDataRaw.slice(1, 8);
+
+    // Label tanggal dari 7 hari lalu sampai kemarin
+    const labels = getLast7DaysLabels(logSensorData.length);
+
+    chartData.value = {
+      labels,
+      datasets: [{
+        label: 'Jumlah Log Sensor',
+        data: logSensorData,
+        fill: false,
+        borderColor: '#06b6d4',
+        tension: 0.4
+      }]
+    };
+
+    chartOptions.value = setChartOptions();
+  } catch (error) {
+    console.error('Gagal memuat data sensor per hari:', error);
+  }
 });
 </script>
 
-<template>
-    <div class="card">
-        <div class="font-semibold text-xl mb-4">Recent Sales</div>
-        <DataTable :value="products" :rows="5" :paginator="true" responsiveLayout="scroll">
-            <Column style="width: 15%" header="Image">
-                <template #body="slotProps">
-                    <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.image}`" :alt="slotProps.data.image" width="50" class="shadow" />
-                </template>
-            </Column>
-            <Column field="name" header="Name" :sortable="true" style="width: 35%"></Column>
-            <Column field="price" header="Price" :sortable="true" style="width: 35%">
-                <template #body="slotProps">
-                    {{ formatCurrency(slotProps.data.price) }}
-                </template>
-            </Column>
-            <Column style="width: 15%" header="View">
-                <template #body>
-                    <Button icon="pi pi-search" type="button" class="p-button-text"></Button>
-                </template>
-            </Column>
-        </DataTable>
-    </div>
-</template>

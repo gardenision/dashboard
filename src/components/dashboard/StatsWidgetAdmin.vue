@@ -3,8 +3,8 @@
         <div class="card mb-0">
             <div class="flex justify-between mb-4">
                 <div>
-                    <span class="block text-muted-color font-medium mb-4">Gardens</span>
-                    <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">{{totalGardens}}</div>
+                    <span class="block text-muted-color font-medium mb-4">Projects</span>
+                    <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">{{totalProjects}}</div>
                 </div>
                 <div class="flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
                     <i class="pi pi-map-marker text-blue-500 !text-xl"></i>
@@ -56,7 +56,7 @@
                 </div>
             </div>
             <span class="text-primary font-medium">{{ totalActuators }} </span>
-            <span class="text-muted-color">working</span>
+            <span class="text-muted-color"> working</span>
         </div>
     </div>
 </template>
@@ -66,57 +66,12 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-const totalGardens = ref(0)
+const totalProjects = ref(0)
 const totalDevices = ref(0)
 const totalActiveSensors = ref(0)
 const totalUnactiveSensors = ref(0)
 const totalActuators = ref(0)
 
-// const token = localStorage.getItem('token')
-// const userId = localStorage.getItem('id') // pastikan ini disimpan waktu login
-// console.log('userId:', userId); // debug
-
-// if (!userId) {
-//   console.error('userId is not set in localStorage');
-// }
-
-// const fetchData = async () => {
-
-//     const userId = localStorage.getItem('id')
-//     const token = localStorage.getItem('token')
-
-//     console.log('userId:', userId) // debug
-
-//     if (!userId) {
-//         console.error('userId is not set in localStorage')
-//         return
-//     }
-
-
-//   try {
-//     // Fetch total gardens
-//     const gardensResponse = await axios.get(`https://api.gardenision.com/gardens?userId=${userId}`, {
-//       headers: {
-//         Authorization: `Bearer ${token}`
-//       }
-//     })
-//     totalGardens.value = gardensResponse.data.data.length
-
-//     // Fetch total devices
-//     const devicesResponse = await axios.get(`https://api.gardenision.com/garden-devices?userId=${userId}`)
-//     totalDevices.value = devicesResponse.data.data.length
-
-//     // Fetch active sensors
-//     const sensorsResponse = await axios.get(`https://api.gardenision.com/sensors?userId=${userId}`)
-//     totalActiveSensors.value = sensorsResponse.data.data.length
-
-//     // Fetch actuators
-//     const actuatorsResponse = await axios.get(`https://api.gardenision.com/actuators?userId=${userId}`)
-//     totalActuators.value = actuatorsResponse.data.data.length
-//   } catch (error) {
-//     console.error('Error fetching data:', error)
-//   }
-// }
 
 const fetchData = async () => {
   const token = localStorage.getItem('token');
@@ -128,7 +83,7 @@ const fetchData = async () => {
   }
 
   try {
-    const response = await axios.get('/api/garden', {
+    const response = await axios.get('/api/project', {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -136,11 +91,11 @@ const fetchData = async () => {
 
     const data = response.data;
 
-    totalGardens.value = data.total_user_gardens;
-    totalDevices.value = data.total_user_devices;
-    totalActiveSensors.value = data.total_user_active_sensors;
-    totalUnactiveSensors.value = data.total_user_unactive_sensors;
-    totalActuators.value = data.total_user_actuators;
+    totalProjects.value = data.total_projects;
+    totalDevices.value = data.total_devices;
+    totalActiveSensors.value = data.total_active_sensors;
+    totalUnactiveSensors.value = data.total_inactive_sensors;
+    totalActuators.value = data.total_actuators;
 
   } catch (error) {
     console.error('Error fetching dashboard data:', error);

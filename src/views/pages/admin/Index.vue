@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
     <Title title="Gardens" @add="showAdd()" @refresh="refresh()" />
     <Dialog header="Dialog" v-model:visible="form.add.dialog" :breakpoints="{ '960px': '75vw' }" :style="{ width: '30vw' }" :modal="true">
         <p class="leading-normal m-0">
@@ -89,4 +89,33 @@ onMounted(() => {
         loading.value = false;
     }, 1000);
 });
+</script> -->
+
+
+<script setup>
+// import BestSellingWidget from '@/components/dashboard/BestSellingWidget.vue';
+import TotalLogAdminWidget from '@/components/dashboard/TotalLogAdminWidget.vue';
+import TotalLogSensorAdminWidget from '@/components/dashboard/TotalLogSensorAdminWidget.vue';
+import TotalLogActuatorAdminWidget from '@/components/dashboard/TotalLogActuatorAdminWidget.vue';
+import StatsWidgetAdmin from '@/components/dashboard/StatsWidgetAdmin.vue';
+// import TableAdminWidget from '@/components/dashboard/TableAdminWidget.vue';
 </script>
+
+<template>
+    <div class="grid grid-cols-12 gap-8">
+        <StatsWidgetAdmin />
+
+        <div class="col-span-12 xl:col-span-6">
+            <TotalLogSensorAdminWidget />
+        </div>
+        <div class="col-span-12 xl:col-span-6">
+            <TotalLogActuatorAdminWidget />
+        </div>
+        <div class="col-span-12">
+            <TotalLogAdminWidget />
+        </div>
+        <!-- <div class="col-span-12">
+            <TableAdminWidget />
+        </div> -->
+    </div>
+</template>

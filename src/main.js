@@ -7,6 +7,8 @@ import PrimeVue from 'primevue/config';
 import ConfirmationService from 'primevue/confirmationservice';
 import ToastService from 'primevue/toastservice';
 
+import Chart from 'primevue/chart';
+
 import '@/assets/styles.scss';
 
 const app = createApp(App);
@@ -22,5 +24,7 @@ app.use(PrimeVue, {
 });
 app.use(ToastService);
 app.use(ConfirmationService);
+
+app.component('Chart', Chart);
 
 app.mount('#app');

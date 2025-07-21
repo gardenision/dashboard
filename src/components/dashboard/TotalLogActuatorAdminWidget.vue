@@ -59,14 +59,14 @@ onMounted(async () => {
       return;
     }
 
-    const response = await axios.get('/api/garden', {
+    const response = await axios.get('/api/project', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
 
     // Ambil data 7 hari terakhir (tanpa hari ini)
-    const logs = response.data.total_user_logs_actuator_perday.slice(1, 8);
+    const logs = response.data.total_logs_actuator_perday.slice(1, 8);
 
     // Buat label 7 hari ke belakang dari hari ini
     const labels = Array.from({ length: 7 }, (_, i) => {

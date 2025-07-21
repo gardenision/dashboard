@@ -1,6 +1,6 @@
 <template>
   <div class="card">
-    <div class="font-semibold text-xl mb-4">Log Aktuator / Hari</div>
+    <div class="font-semibold text-xl mb-4">Log Sensor / Hari</div>
     <Chart type="line" :data="chartData" :options="chartOptions" class="h-[30rem]" />
   </div>
 </template>
@@ -50,45 +50,57 @@ function setChartOptions() {
   };
 }
 
+function getLast7DaysLabels(dataLength) {
+  const labels = [];
+  const today = new Date();
+
+  // Dari 7 hari lalu sampai kemarin (hari ini exclude)
+  for (let i = dataLength; i > 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    labels.push(d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }));
+  }
+
+  return labels;
+}
+
 onMounted(async () => {
   try {
     const token = localStorage.getItem('token');
-
     if (!token) {
       console.error('Token not found');
       return;
     }
 
-    const response = await axios.get('/api/garden', {
+    const response = await axios.get('/api/project', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
 
-    // Ambil data 7 hari terakhir (tanpa hari ini)
-    const logs = response.data.total_user_logs_actuator_perday.slice(1, 8);
+    const logSensorDataRaw = response.data.total_logs_sensor_perday || [];
 
-    // Buat label 7 hari ke belakang dari hari ini
-    const labels = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (7 - i));
-      return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
-    });
+    // Ambil 7 hari terakhir tanpa hari ini (buang index 0)
+    const logSensorData = logSensorDataRaw.slice(1, 8);
+
+    // Label tanggal dari 7 hari lalu sampai kemarin
+    const labels = getLast7DaysLabels(logSensorData.length);
 
     chartData.value = {
       labels,
       datasets: [{
-        label: 'Jumlah Log Aktuator',
-        data: logs,
+        label: 'Jumlah Log Sensor',
+        data: logSensorData,
         fill: false,
-        borderColor: '#FFB162',
+        borderColor: '#06b6d4',
         tension: 0.4
       }]
     };
 
     chartOptions.value = setChartOptions();
   } catch (error) {
-    console.error('Gagal memuat data aktuator per hari:', error);
+    console.error('Gagal memuat data sensor per hari:', error);
   }
 });
 </script>
+
