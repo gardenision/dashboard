@@ -1,6 +1,7 @@
 {
     "name": "gardenision",
     "version": "1.0.0",
+    "type": "module",
     "scripts": {
         "dev": "vite",
         "preview": "vite preview",
@@ -18,7 +19,7 @@
         "chart.js": "^3.3.2",
         "cors": "^2.8.5",
         "express": "^5.1.0",
-        "http-proxy-middleware": "^3.0.5",
+        "express-http-proxy": "^2.1.1",
         "leaflet": "^1.9.4",
         "leaflet-geosearch": "^4.2.0",
         "node-fetch": "^3.3.2",
