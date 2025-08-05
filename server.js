@@ -10,7 +10,7 @@ const app = express();
 app.use(
     '/api',
     proxy('https://api.gardenision.com', {
-        proxyReqPathResolver: () => '/api'
+        proxyReqPathResolver: (req) => `/api${req.url.replace(/^\/api/, '')}`
     })
 );
 
