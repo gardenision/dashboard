@@ -7,7 +7,12 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const app = express();
 
 // ✅ Proxy ke API utama
-app.use('/api', proxy('https://api.gardenision.com'));
+app.use(
+    '/api',
+    proxy('https://api.gardenision.com', {
+        proxyReqPathResolver: () => '/api'
+    })
+);
 
 // ✅ Proxy untuk auth ke broadcasting/auth
 app.use(
